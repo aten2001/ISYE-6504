@@ -1,0 +1,290 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Question 2 - 1:
+
+"
+Overall Best Solution: rbfdot seems to provide an accuracy of 99.54128% for cost value = 10000
+
+Best vanilladot solution: Accuracy of 86.39144% for cost value = 0.01, 0.1, 1, 10, 100
+"
+
+```{r}
+library(kernlab)
+library(e1071)
+
+data <- read.table("credit_card_data-headers.txt", header = TRUE)
+
+cost_values = c(1, 10, 100, 1000, 10000, 0.1, 0.01, 0.001)
+kernel_list = c("vanilladot", "rbfdot", "anovadot", "polydot")
+
+len = length(cost_values)*length(kernel_list)
+for (j in 1:length(cost_values)) {
+  model <- ksvm(as.matrix(data[,1:10]), as.factor(data[,11]), type = "C-svc", kernel =  kernel_list[1], scaled = TRUE, C=cost_values[j])
+  a <- colSums(model@xmatrix[[1]]*model@coef[[1]])
+  a0 <- model@b
+  pred <- predict(model,data[,1:10])
+  accur[j] = sum(predict(model,data[,1:10]) == data[,11])/nrow(data)
+}
+
+cat("\nSVM Kernel is ",kernel_list[1], "\n")
+cat("Best C value is ",cost_values[which.max(accur[1:length(cost_values)])],"\n")
+cat("Max Accuracy is ",max(accur[1:length(cost_values)]),"\n\n\n")
+
+
+for (j in 1:length(cost_values)) {
+  model <- ksvm(as.matrix(data[,1:10]), as.factor(data[,11]), type = "C-svc", kernel =  kernel_list[2], scaled = TRUE, C=cost_values[j])
+  a <- colSums(model@xmatrix[[1]]*model@coef[[1]])
+  a0 <- model@b
+  pred <- predict(model,data[,1:10])
+  accur[j] = sum(predict(model,data[,1:10]) == data[,11])/nrow(data)
+}
+
+cat("\nSVM Kernel is ",kernel_list[2], "\n")
+cat("Best C value is ",cost_values[which.max(accur[1:length(cost_values)])],"\n")
+cat("Max Accuracy is ",max(accur[1:length(cost_values)]),"\n\n\n")
+
+
+for (j in 1:length(cost_values)) {
+  model <- ksvm(as.matrix(data[,1:10]), as.factor(data[,11]), type = "C-svc", kernel =  kernel_list[3], scaled = TRUE, C=cost_values[j])
+  a <- colSums(model@xmatrix[[1]]*model@coef[[1]])
+  a0 <- model@b
+  pred <- predict(model,data[,1:10])
+  accur[j] = sum(predict(model,data[,1:10]) == data[,11])/nrow(data)
+}
+
+cat("\nSVM Kernel is ",kernel_list[3], "\n")
+cat("Best C value is ",cost_values[which.max(accur[1:length(cost_values)])],"\n")
+cat("Max Accuracy is ",max(accur[1:length(cost_values)]),"\n\n\n")
+
+
+for (j in 1:length(cost_values)) {
+  model <- ksvm(as.matrix(data[,1:10]), as.factor(data[,11]), type = "C-svc", kernel =  kernel_list[4], scaled = TRUE, C=cost_values[j])
+  a <- colSums(model@xmatrix[[1]]*model@coef[[1]])
+  a0 <- model@b
+  pred <- predict(model,data[,1:10])
+  accur[j] = sum(predict(model,data[,1:10]) == data[,11])/nrow(data)
+}
+
+cat("\nSVM Kernel is ",kernel_list[4], "\n")
+cat("Best C value is ",cost_values[which.max(accur[1:length(cost_values)])],"\n")
+cat("Max Accuracy is ",max(accur[1:length(cost_values)]),"\n\n\n")
+
+```
+
+---
+## REPRODUCING THE ABOVE KSVM FUNCTION WITH 80-20 Train-Test Split for the best C-value for each of the above kernel methods
+https://stackoverflow.com/questions/17200114/how-to-split-data-into-training-testing-sets-using-sample-function
+---
+
+
+```{r}
+
+library(kernlab)
+library(e1071)
+library(caTools)
+require(caTools)
+set.seed(101)
+
+data <- read.table("credit_card_data-headers.txt", header = TRUE)
+sample = sample.split(data$R1, SplitRatio = 0.80)
+x_data_train <- subset(data[,1:10], sample == TRUE)
+y_data_train <- subset(data[,11], sample == TRUE)
+x_data_test <- subset(data[,1:10], sample == FALSE)
+y_data_test <- subset(data[,11], sample == FALSE)
+
+cost_values = c(1, 10, 100, 1000, 10000, 0.1, 0.01, 0.001)
+kernel_list = c("vanilladot", "rbfdot", "anovadot", "polydot")
+accur1 <- c()
+
+for (j in 1:length(cost_values)) {
+  ksvm_model <- ksvm(as.matrix(x_data_train), as.factor(y_data_train), type = "C-svc", kernel =  kernel_list[1], scaled = TRUE, C=cost_values[j])
+  a <- colSums(ksvm_model@xmatrix[[1]]*ksvm_model@coef[[1]])
+  a0 <- ksvm_model@b
+  pred <- predict(ksvm_model,x_data_test)
+  accur1[j] = sum(pred == y_data_test)/length(y_data_test)
+}
+
+cat("\nSVM Kernel is ",kernel_list[1], "\n")
+cat("Best C value is ",cost_values[which.max(accur1[1:length(cost_values)])],"\n")
+cat("Max Accuracy is ",max(accur1[1:length(cost_values)]),"\n\n\n")
+
+kernel1 <- c(kernel_list[1])
+c_val1 <- c(cost_values[which.max(accur1[1:length(cost_values)])])
+
+accur2 <- c()
+
+for (j in 1:length(cost_values)) {
+  ksvm_model <- ksvm(as.matrix(x_data_train), as.factor(y_data_train), type = "C-svc", kernel =  kernel_list[2], scaled = TRUE, C=cost_values[j])
+  a <- colSums(ksvm_model@xmatrix[[1]]*ksvm_model@coef[[1]])
+  a0 <- ksvm_model@b
+  pred <- predict(ksvm_model,x_data_test)
+  accur2[j] = sum(pred == y_data_test)/length(y_data_test)
+}
+
+cat("\nSVM Kernel is ",kernel_list[2], "\n")
+cat("Best C value is ",cost_values[which.max(accur2[1:length(cost_values)])],"\n")
+cat("Max Accuracy is ",max(accur2[1:length(cost_values)]),"\n\n\n")
+
+
+accur3 <- c()
+
+for (j in 1:length(cost_values)) {
+  ksvm_model <- ksvm(as.matrix(x_data_train), as.factor(y_data_train), type = "C-svc", kernel =  kernel_list[3], scaled = TRUE, C=cost_values[j])
+  a <- colSums(ksvm_model@xmatrix[[1]]*ksvm_model@coef[[1]])
+  a0 <- ksvm_model@b
+  pred <- predict(ksvm_model,x_data_test)
+  accur3[j] = sum(pred == y_data_test)/length(y_data_test)
+}
+cat("\nSVM Kernel is ",kernel_list[3], "\n")
+cat("Best C value is ",cost_values[which.max(accur3[1:length(cost_values)])],"\n")
+cat("Max Accuracy is ",max(accur3[1:length(cost_values)]),"\n\n\n")
+
+accur4 <- c()
+
+for (j in 1:length(cost_values)) {
+  ksvm_model <- ksvm(as.matrix(x_data_train), as.factor(y_data_train), type = "C-svc", kernel =  kernel_list[4], scaled = TRUE, C=cost_values[j])
+  a <- colSums(ksvm_model@xmatrix[[1]]*ksvm_model@coef[[1]])
+  a0 <- ksvm_model@b
+  pred <- predict(ksvm_model,x_data_test)
+  accur4[j] = sum(pred == y_data_test)/length(y_data_test)
+}
+cat("\nSVM Kernel is ",kernel_list[4], "\n")
+cat("Best C value is ",cost_values[which.max(accur4[1:length(cost_values)])],"\n")
+cat("Max Accuracy is ",max(accur4[1:length(cost_values)]),"\n\n\n")
+
+
+
+```
+
+
+
+## Question 2 - 3:
+  
+  kknn
+
+```{r}
+library(kernlab)
+library(kknn)
+
+data <- read.table("credit_card_data-headers.txt", header = TRUE)
+
+k_list <- c(1:50)
+kernel_list = c("rectangular", "optimal", "triangular")
+
+accuracy <- c()
+pred <- rep(0, nrow(data))
+
+for (i in 1:length(k_list)) {
+  for (j in 1:nrow(data)) {
+    kknn_model <- kknn(R1~., data[-j,1:11], data[j,1:11], k = k_list[i], distance = 2, scale = TRUE, kernel = "rectangular")
+    pred[j] <- fitted(kknn_model)
+      }
+  accur = sum(pred == data[,11])/length(data[,11])
+  accuracy <- c(accuracy, accur)
+}
+# accuracy
+cat("Max Accuracy is:", max(accuracy[1:length(k_list)]), ",\nand the corresponding value of k is: ", k_list[which.max(accuracy[1:length(k_list)])])
+
+
+# cat("Best k value is ",k_list[which.max(accuracy[1:length(k_list)])],"\n")
+# cat("Best Kernel is ",kernel_list[which.max(accuracy[1:length(k_list)])],"\n")
+# cat("Max Accuracy is ",max(accuracy[1:length(k_list)]),"\n\n\n")
+
+
+```
+
+## Question 3.1 (a):
+Cross Validate kknn 
+Here I am using train.kknn function. 
+
+
+```{r}
+library(kernlab)
+library(kknn)
+library(e1071)
+library(caret)
+
+data <- read.table("credit_card_data-headers.txt", header = TRUE)
+sample = sample.split(data$R1, SplitRatio = 0.80)
+x_data_train <- subset(data[,1:10], sample == TRUE)
+y_data_train <- subset(data[,11], sample == TRUE)
+x_data_test <- subset(data[,1:10], sample == FALSE)
+y_data_test <- subset(data[,11], sample == FALSE)
+
+kernels = c("rectangular", "optimal", "gaussian")
+
+for (i in 1:length(kernels)){
+  model <- train.kknn(R1~., data = data, kmax = 100, distance = 2, kernel = kernels[i], scale = TRUE)
+}
+
+
+# rect_model <- train.kknn(R1~., data = data, kmax = 100, distance = 2, kernel = 'rectangular', scale = TRUE)
+# optimal_model <- train.kknn(R1~., data = data, kmax = 100, distance = 2, kernel = 'optimal', scale = TRUE)
+# gaussian_model <- train.kknn(R1~., data = data, kmax = 100, distance = 2, kernel = 'gaussian', scale = TRUE)
+# 
+# plot(rect_model, col = "blue")
+# plot(gaussian_model, col = "black")
+# plot(optimal_model, col = "green")
+#
+
+```
+
+
+## Question 3.1 (b):
+Here, I am splitting the data to train, validate and test. I am using 3 different ratios (80%,10%,10%), (60%,20%,20%) and (70%,15%,15%). I am not going to use Rotating method at this point.
+https://stackoverflow.com/questions/36068963/r-how-to-split-a-data-frame-into-training-validation-and-test-sets
+
+
+
+```{r}
+library(kernlab)
+library(e1071)
+library(caTools)
+require(caTools)
+set.seed(101)
+
+data <- read.table("credit_card_data-headers.txt", header = TRUE)
+
+x <- c(0.6,0.2,0.2)
+y <- c(0.7,0.15,0.15)
+z <- c(0.8,0.1,0.1)
+m <- c(x,y,z)
+
+
+
+fractionTraining <- 0.60
+fractionValidation <- 0.20
+fractionTest <- 0.20
+
+sampleSizeTraining <- floor(fractionTraining * nrow(data))
+sampleSizeValidation <- floor(fractionValidation * nrow(data))
+sampleSizeTest <- floor(fractionTest * nrow(data))
+
+indicesTraining <- sort(sample(seq_len(nrow(data)), size=sampleSizeTraining))
+indicesNotTraining <- setdiff(seq_len(nrow(data)), indicesTraining)
+indicesValidation <- sort(sample(indicesNotTraining, size=sampleSizeValidation))
+indicesTest <- setdiff(indicesNotTraining, indicesValidation)
+
+dfTraining   <- data[indicesTraining, ]
+x_dfTraining <- dfTraining[,1:10]
+y_dfTraining <- 
+dfValidation <- data[indicesValidation, ]
+dfTest       <- data[indicesTest, ]
+
+cost_values = c(1, 10, 100, 1000, 10000, 0.1, 0.01, 0.001)
+
+for (j in 1:length(cost_values)) {
+  ksvm_model <- ksvm(as.matrix(x_data_train), as.factor(y_data_train), type = "C-svc", kernel =  kernel_list[2], scaled = TRUE, C=cost_values[j])
+  a <- colSums(ksvm_model@xmatrix[[1]]*ksvm_model@coef[[1]])
+  a0 <- ksvm_model@b
+  pred <- predict(ksvm_model,x_data_test)
+  accur2[j] = sum(pred == y_data_test)/length(y_data_test)
+}
+
+
+
+```
+

@@ -1,0 +1,91 @@
+---
+title: "Homework1"
+author: "Ganapathy Raaman Balaji"
+date: "May 17, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r iris}
+# library(kernlab)
+# library(e1071)
+# 
+# cost_values = c(1, 10, 100, 1000, 10000, 0.1, 0.01, 0.001)
+# kernel_list = c("vanilladot", "rbfdot", "anovadot", "polydot")
+# len1 = length(cost_values)*length(kernel_list)
+# new_c_list <- c()
+# new_kernetl_list <- c()
+# new_accuracy_list <- c()
+# 
+# 
+# for 
+# for (X in 1:length(kernel_list)){
+#   for (Y in 1:length(cost_values)){
+#     new_c_list
+#     
+#   }
+#   accurracy[X] = check_accuracy(X) # test knn with X neighbors
+# }
+
+
+
+# model_prediction = function(X, Y){
+  
+  
+}
+```
+
+```{r}
+# library(datasets)
+# library(kernlab)
+# library(e1071)
+# 
+# iris_data <- iris
+# # plot(iris_data)
+# iris_dataSpecies = factor(iris_data$Species)
+# split = 0.8
+# trainIndex <- createDataPartition(iris$Species, p=split, list=FALSE)
+# data_train <- iris[ trainIndex,]
+# data_test <- iris[-trainIndex,]
+# model <- ksvm()
+```
+
+
+```{r}
+library(datasets)
+library(kernlab)
+library(caTools)
+library(ggplot2)
+library(GGally)
+library(e1071)
+require(caTools)
+dataset <- iris
+iris_dataSpecies = factor(dataset$Species)
+split = sample.split(dataset$Species, SplitRatio = .8)
+training_set = subset(dataset, split == TRUE)
+test_set = subset(dataset, split == FALSE)
+training_set[,1:4] = scale(training_set[,1:4])
+test_set[,1:4] = scale(test_set[,1:4])
+
+classifier1 = svm(formula = Species~., data = training_set, type = 'C-classification', kernel = 'radial', cost = 10000)
+classifier2 = svm(formula = Species~ Petal.Width + Petal.Length, data = training_set, type = 'C-classification', kernel = 'radial', cost = 10000)
+
+test_pred1 = predict(classifier1, type = 'response', newdata = test_set[-5])
+test_pred2 = predict(classifier2, type = 'response', newdata = test_set[-5])
+
+cm1 = table(test_set[,5], test_pred1)
+cm2 = table(test_set[,5], test_pred2)
+
+cm1
+
+```
+
